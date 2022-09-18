@@ -46,7 +46,8 @@ show int gi0/0 | i MTU
 
 ```python
 > python src/command_runner.py
-[09/18/22 14:23:28] INFO     main() Starting Script                                                                                command_runner.py:18Username: david
+[09/18/22 14:23:28] INFO     main() Starting Script                                                                                command_runner.py:18
+Username: david
 Password:
 ===============================================================================
                                   10.0.100.27
@@ -84,3 +85,5 @@ show int gi0/0 | i MTU
 
 [09/18/22 14:24:02] INFO     main() Script completed. Finished in 33.78 second(s)                                                  command_runner.py:41                    INFO     main() DONE
 ```
+
+The output of each device will now be in output.txt
