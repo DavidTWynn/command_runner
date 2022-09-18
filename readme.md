@@ -17,8 +17,8 @@ python -m pip install requirements.txt
 
 ## Config
 
-1. devices.txt
-2. commands.txt
+1. src/input/devices.txt
+2. src/input/commands.txt
 
 Create a devices.txt file in the input directory based off of the devices_example.txt file.
 These devices will be logged into via ssh and commands will be ran against them.
