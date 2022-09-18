@@ -1,11 +1,26 @@
+from rich.logging import RichHandler
 import getpass
 import netmiko
 
+import logging
+import time
 import sys
+
+log_format = logging.Formatter("%(funcName)s() %(message)s")
+
+logger = logging.getLogger("command_runner")
+logger.setLevel(logging.INFO)
+
+stream_handler = RichHandler()
+stream_handler.setFormatter(log_format)
+
+logger.addHandler(stream_handler)
 
 
 def main():
     """Runs script to send commands to multiple devices."""
+    logger.info("Starting Script")
+    start_time = time.perf_counter()
     # Get list of devices to run against
     devices = import_devices("src/input/devices.txt")
     # Ask user for login info
@@ -13,7 +28,7 @@ def main():
     # Setup device inventory dicts for netmiko
     device_inventory = create_device_inventory(username, password, devices)
     # Commands to run against all devices
-    commands = ["show ip int b | e una", "show ip ro"]
+    commands = ["s ip int b | e una", "s ip arp"]
     # Execute commands
     command_outputs = send_commands(device_inventory, commands)
 
@@ -21,13 +36,20 @@ def main():
     output = format_command_output(command_outputs)
 
     # Save output to file and print
+    logger.debug("Saving output to file.")
     with open("output.txt", "w") as f:
         f.write(output)
     print(output)
 
+    time_spent = round(time.perf_counter() - start_time, 2)
+    logger.info(f"Script completed. Finished in {time_spent} second(s)")
+
+    logger.info("DONE")
+
 
 def get_login_info() -> tuple[str, str]:
     """Requests login information from user to be used for all devices."""
+    logger.debug("Requesting login info.")
     username = input("Username: ")
     password = getpass.getpass()
     return username, password
@@ -35,12 +57,14 @@ def get_login_info() -> tuple[str, str]:
 
 def import_devices(filename: str) -> list[str]:
     """Imports list of device hostnames or IP addresses from a file."""
+    logger.debug("Importing devices from file")
     try:
         with open(filename, "r") as f:
             # splitlines instead of readlines to not include \n
             return f.read().splitlines()
     except FileNotFoundError:
         print(f"Error: The file '{filename}' was not found.")
+        logger.critical("Failed to import devices. Exiting script.")
         sys.exit()
 
 
@@ -48,6 +72,7 @@ def create_device_inventory(
     username: str, password: str, devices: list[str]
 ) -> dict[dict]:
     """Creates dictionary of device dictionaries for netmiko."""
+    logger.debug("Creating device inventory.")
     inventory = {}
     for device in devices:
         current_device = {
@@ -63,8 +88,17 @@ def create_device_inventory(
 
 def _send_command(device_details: dict, command: str) -> str:
     """Takes netmiko inventory dict and sends command to each device."""
+    logger.debug(
+        f"User '{device_details['username']}' sending command '{command}'"
+        f" to device '{device_details['host']}'"
+    )
     with netmiko.ConnectHandler(**device_details) as net_connect:
         output = net_connect.send_command(command)
+        logger.debug(
+            f"User '{device_details['username']}' receive"
+            f" response from '{command}' :"
+            f" to device '{device_details['host']}'\n{output}"
+        )
         return output
 
 
@@ -75,6 +109,9 @@ def send_commands(
     should contain the information needed to log into a device. In this
     case it is a netmiko inventory dict."""
     # Run against each device
+    logger.debug(
+        f"Sending commands {commands} to {list(multi_device_details.keys())}"
+    )
     all_output = {}
     for device_details in multi_device_details.values():
         hostname = device_details["host"]
@@ -90,6 +127,7 @@ def send_commands(
 def format_command_output(command_output: dict[dict:dict]) -> str:
     """Takes the output of each device and commands as dict and formats as string.
     To be used to print or send to file."""
+    logger.debug("Formatting output.")
     output = ""
     for device, commands in command_output.items():
         # Format header
