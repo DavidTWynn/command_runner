@@ -7,12 +7,17 @@ and runs commands against them.
 
 # Getting started
 
+## Requirements
+- Python 3.10 (Uses newer typing features)
+- netmiko
+- rich
+
 ## Basic install
 
 ```bash
 git clone https://github.com/DavidTWynn/command_runner.git
 cd command_runner
-python -m pip install requirements.txt
+python3.10 -m pip install -r requirements.txt
 ```
 
 ## Config
@@ -45,7 +50,7 @@ show int gi0/0 | i MTU
 ## Run script
 
 ```python
-> python src/command_runner.py
+> python3.10 src/command_runner.py
 [09/18/22 14:23:28] INFO     main() Starting Script                               command_runner.py:18
 Username: david
 Password:
