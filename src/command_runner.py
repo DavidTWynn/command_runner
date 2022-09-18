@@ -1,20 +1,16 @@
-from rich.logging import RichHandler
-import getpass
 import netmiko
+import rich
 
-import logging
+import getpass
 import time
 import sys
 
-log_format = logging.Formatter("%(funcName)s() %(message)s")
+import utils
 
-logger = logging.getLogger("command_runner")
-logger.setLevel(logging.INFO)
-
-stream_handler = RichHandler()
-stream_handler.setFormatter(log_format)
-
-logger.addHandler(stream_handler)
+# Use rich for exception printing
+utils.enable_rich_traceback()
+# Use common logging settings
+logger = utils.logging_settings()
 
 
 def main():
@@ -23,12 +19,14 @@ def main():
     start_time = time.perf_counter()
     # Get list of devices to run against
     devices = import_devices("src/input/devices.txt")
+    # Commands to run against all devices
+    logger.debug("Importing commands from commands.txt")
+    with open("src/input/commands.txt", "r") as f:
+        commands = f.read().splitlines()
     # Ask user for login info
     username, password = get_login_info()
     # Setup device inventory dicts for netmiko
     device_inventory = create_device_inventory(username, password, devices)
-    # Commands to run against all devices
-    commands = ["s ip int b | e una", "s ip arp"]
     # Execute commands
     command_outputs = send_commands(device_inventory, commands)
 
@@ -39,7 +37,7 @@ def main():
     logger.debug("Saving output to file.")
     with open("output.txt", "w") as f:
         f.write(output)
-    print(output)
+    rich.print(output)
 
     time_spent = round(time.perf_counter() - start_time, 2)
     logger.info(f"Script completed. Finished in {time_spent} second(s)")
@@ -63,7 +61,7 @@ def import_devices(filename: str) -> list[str]:
             # splitlines instead of readlines to not include \n
             return f.read().splitlines()
     except FileNotFoundError:
-        print(f"Error: The file '{filename}' was not found.")
+        rich.print(f"Error: The file '{filename}' was not found.")
         logger.critical("Failed to import devices. Exiting script.")
         sys.exit()
 

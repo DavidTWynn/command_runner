@@ -1,0 +1,2 @@
+show int gi0/0 description
+show int gi0/0 | i MTU
