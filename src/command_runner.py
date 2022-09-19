@@ -5,7 +5,7 @@ import getpass
 import time
 import sys
 
-import utils
+from src import utils
 
 # Use rich for exception printing
 utils.enable_rich_traceback()
