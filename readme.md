@@ -49,7 +49,7 @@ show int gi0/0 | i MTU
 
 ## Run script
 
-```python
+```
 > python3.10 src/command_runner.py
 [09/18/22 14:23:28] INFO     main() Starting Script                               command_runner.py:18
 Username: david
